@@ -31,11 +31,13 @@ distance(u1,u2)
 
 #THIS PORTION WAS "BORROWED" from a github repo i studied
 #This takes a while to run
+# Beware, this kind of matrix is very time-consuming, and the one you are using is not optimized. 
+# Consider using default dictionary if you have to use user similarity matrix.
 userMatrix = []
 for i, row in enumerate(userRatingPerItem.index):
-    u1 = userRatingPerItem[row]
+    u1 = userRatingPerItem[row] # I believe it should be userRatingPerItem.loc[row] u2 has the same problem
     #symmetric matrix fill all values previously examined
-    userDistanes = [entry[i] for entry in userMatrix]
+    userDistanes = [entry[i] for entry in userMatrix] # I believe this one is incorrect, but I have not tested it using any data. 
     for j, row2 in enumerate(userRatingPerItem.index[i:]):
         u2 = userRatingPerItem[row2]
         dist = distance(u1,u2)
@@ -51,10 +53,11 @@ def recommendMovies(user, userSimilarities, userRatingPerItem, dataMan, nUsers=2
     topNSimilarUsers = userSimilarities[user-1].drop(user-1).sort_values().index[:nUsers]
     #offset fix here
     topNSimilarUsers = [i+1 for i in topNSimilarUsers]
-    alreadyWatched = set(dataMan[dataMan.UserID == 0].ItemID.unique())
+    alreadyWatched = set(dataMan[dataMan.UserID == 0].ItemID.unique()) # I think, maybe, this UserID should be user instead of 0. 
+                                                                       # Because you are trying to find all movies that have been watched by the current user instead of user 0. 
     unseen = set(dataMan.ItemID.unique()) - alreadyWatched
     projectedReviews = userRatingPerItem[userRatingPerItem.index.isin(topNSimilarUsers)].mean()[list(unseen)].sort_values(ascending=False)
     return projectedReviews[:nItems]
 
 #example of some recs
-print(recommendMovies(1, userSimilarities, userRatingPerItem, dataMan))
+print(recommendMovies(1, userSimilarities, userRatingPerItem, dataMan)) # this is recommendation only for one user, if you could, can you generate the recommendations for all users?
